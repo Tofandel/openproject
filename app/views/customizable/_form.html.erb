@@ -29,21 +29,30 @@ See docs/COPYRIGHT.rdoc for more details.
 
 <%# locals: form, all_fields, only_required #%>
 
-<% form.object.custom_field_values.each do |value| %>
-  <%= form.fields_for_custom_fields :custom_field_values, value do |value_form| %>
+<% form.object.available_custom_fields.each do |custom_field| %>
+  <%
+    form_options = {
+      custom_value: form.object.custom_value_for(custom_field.id),
+      customized: form.object,
+      custom_field: custom_field
+    } %>
+  <%= form.fields_for_custom_fields :custom_field_values, form.object, form_options do |cf_form| %>
     <%# display all fields OR only display required fields OR only display optional fields #%>
-    <% required = value.custom_field.is_required? %>
+    <% required = custom_field.is_required? %>
     <% if all_fields || (only_required && required) || (!only_required && !required) %>
-      <% container_class = value.custom_field.field_format == 'text' ? '-xxwide' : '-wide' %>
-      <div class="form--field custom_field_<%= value.custom_field.id %> <%= required ? '-required' : '' %>">
+      <% container_class = custom_field.field_format == 'text' ? '-xxwide' : '-wide' %>
+      <div class="form--field custom_field_<%= custom_field.id %> <%= required ? '-required' : '' %>">
         <%
-          options = { container_class: container_class, required: required }
+          options = {
+            container_class: container_class,
+            required: required
+          }
 
           if local_assigns[:help_text]
-            options[:help_text] = local_assigns[:help_text].merge(attribute: "customField#{value.custom_field.id}")
+            options[:help_text] = local_assigns[:help_text].merge(attribute: "customField#{custom_field.id}")
           end
         %>
-        <%= value_form.custom_field(options) %>
+        <%= cf_form.cf_form_field(options) %>
       </div>
     <% end %>
   <% end %>
